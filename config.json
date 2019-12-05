@@ -1,0 +1,18 @@
+{
+    "debug": true,
+    "server": {
+      "address": ":8080"
+    },
+    "context":{
+      "timeout":2
+    },
+    "mongo": {
+      "uri": "mongodb://127.0.0.1:27017/tbox_backend",
+      "max_active": "tbox_backend"
+    },
+    "redis": {
+        "uri": "redis://127.0.0.1:6379/0",
+        "connection_pool": 10
+    }
+}
+  
