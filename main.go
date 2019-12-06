@@ -5,7 +5,9 @@ import (
 	"log"
 	"strconv"
 
+	"tbox_backend/src/entity"
 	"tbox_backend/src/handlers"
+	"tbox_backend/src/helper"
 	"tbox_backend/src/repository"
 	"tbox_backend/src/routers"
 	"tbox_backend/src/services"
@@ -38,26 +40,40 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	// get config twilio
+	twilioConfig := entity.TwilioConfig{
+		AccountSID:  viper.GetString(`twilio.account_sid`),
+		AuthToken:   viper.GetString(`twilio.auth_token`),
+		PhoneNumber: viper.GetString(`twilio.phone_nunber`),
+	}
+
 	session, err := mgo.Dial(mongoURI)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer session.Close()
 
-	p := &redis.Pool{
+	pool := &redis.Pool{
 		MaxIdle:     maxIdle,
 		MaxActive:   100,
 		IdleTimeout: 5000,
 	}
-	p.Dial = func() (redis.Conn, error) {
+	pool.Dial = func() (redis.Conn, error) {
 		return redis.DialURL(redisURI)
 	}
 
 	router := gin.Default()
 
-	userRepo := repository.NewUserRepository(session, p)
-	userTokenRepo := repository.NewUserTokenRepository(session, p)
-	userService := services.NewUserService(userRepo, userTokenRepo)
+	// import repository
+	userRepo := repository.NewUserRepository(session, pool)
+	userTokenRepo := repository.NewUserTokenRepository(session, pool)
+	userOTPRepo := repository.NewUserOTPRepository(session, pool)
+
+	// import helper
+	twiliHelper := helper.NewTwilioHelper(twilioConfig)
+
+	// import services
+	userService := services.NewUserService(userRepo, userTokenRepo, userOTPRepo, twiliHelper)
 	userHandler := handlers.NewUserHandler(userService)
 
 	// register routers

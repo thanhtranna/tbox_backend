@@ -14,3 +14,11 @@ type UserToken struct {
 	CreatedAt int64  `json:"created_at" bson:"created_at"`
 	UpdatedAt int64  `json:"updated_at" bson:"updated_at"`
 }
+
+type UserOTP struct {
+	ID         string `json:"user_id" bson:"user_id"`
+	OTP        string `json:"otp" bson:"otp"`
+	TimeExpire int64  `json:"time_expire" bson:"time_expire"`
+	CreatedAt  int64  `json:"created_at" bson:"created_at"`
+	UpdatedAt  int64  `json:"updated_at" bson:"updated_at"`
+}

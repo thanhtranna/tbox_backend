@@ -10,7 +10,7 @@ type IUserValidate interface {
 }
 
 const (
-	regexPhoneNumber string = `^0(1\d{9}|9\d{8})$`
+	regexPhoneNumber string = `^(09|01[2|6|8|9])+([0-9]{8})$`
 )
 
 type userValidator struct{}

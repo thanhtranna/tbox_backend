@@ -64,7 +64,7 @@ func (u *userTokenRepository) CacheUserTokenToRedis(input entity.UserToken) erro
 
 func (u *userTokenRepository) GetUserTokenFromRedis(input string) (result entity.UserToken, err error) {
 	dataRedis, err := u.rds.GetString(u.getKeyRedisUserToken(input))
-	if err != nil && err.Error() != "redigo: nil returned" {
+	if err != nil && err != redis.ErrNil {
 		return result, err
 	}
 	err = json.Unmarshal([]byte(dataRedis), &result)

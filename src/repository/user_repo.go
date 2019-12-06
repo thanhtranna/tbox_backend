@@ -76,7 +76,7 @@ func (u *userRepository) getKeyRedisUser(phoneNumber string) string {
 
 func (u *userRepository) GetUserFromRedis(input string) (result entity.User, err error) {
 	dataRedis, err := u.rds.GetString(u.getKeyRedisUser(input))
-	if err != nil && err.Error() != "redigo: nil returned" {
+	if err != nil && err != redis.ErrNil {
 		return result, err
 	}
 	err = json.Unmarshal([]byte(dataRedis), &result)

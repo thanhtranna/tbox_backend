@@ -1,18 +1,22 @@
 {
-    "debug": true,
-    "server": {
-      "address": ":8080"
-    },
-    "context":{
-      "timeout":2
-    },
-    "mongo": {
-      "uri": "mongodb://127.0.0.1:27017/tbox_backend",
-      "max_active": "tbox_backend"
-    },
-    "redis": {
-        "uri": "redis://127.0.0.1:6379/0",
-        "connection_pool": 10
-    }
+  "debug": true,
+  "server": {
+    "address": ":8080"
+  },
+  "context": {
+    "timeout": 2
+  },
+  "mongo": {
+    "uri": "mongodb://127.0.0.1:27017/tbox_backend",
+    "max_active": "tbox_backend"
+  },
+  "redis": {
+    "uri": "redis://127.0.0.1:6379/0",
+    "connection_pool": 10
+  },
+  "twilio": {
+    "account_sid": "AC64bde4c34d7c0ad2106e3e9682a2d231",
+    "auth_token": "6b7cdfd9fef678033c613a32af27f734",
+    "phone_nunber": "+12056199675"
+  }
 }
-  
