@@ -12,6 +12,7 @@ import (
 
 type IUserService interface {
 	Login(string) error
+	VerifyPhoneNumber(entity.VerifyPhoneNumber) error
 }
 
 type userService struct {
@@ -19,20 +20,21 @@ type userService struct {
 	userTokenRepo repository.IUserTokenRepo
 	userOTPRepo   repository.IUserOTPRepo
 	twilioHelper  helper.ITwilioHelper
+	userValidator validator.IUserValidate
 }
 
-func NewUserService(userRepo repository.IUserRepo, userTokenRepo repository.IUserTokenRepo, userOTPRepo repository.IUserOTPRepo, twilioHelper helper.ITwilioHelper) IUserService {
+func NewUserService(userRepo repository.IUserRepo, userTokenRepo repository.IUserTokenRepo, userOTPRepo repository.IUserOTPRepo, twilioHelper helper.ITwilioHelper, userValidator validator.IUserValidate) IUserService {
 	return &userService{
 		userRepo:      userRepo,
 		userTokenRepo: userTokenRepo,
 		userOTPRepo:   userOTPRepo,
 		twilioHelper:  twilioHelper,
+		userValidator: userValidator,
 	}
 }
 
 func (u *userService) Login(input string) error {
-	var userValidator = validator.NewUserValidator()
-	if err := userValidator.ValidatePhoneNumber(input); err != nil {
+	if err := u.userValidator.ValidatePhoneNumber(input); err != nil {
 		return err
 	}
 
@@ -90,5 +92,13 @@ func (u *userService) Login(input string) error {
 	}
 	fmt.Println("user ", user)
 
+	return nil
+}
+
+func (u *userService) VerifyPhoneNumber(input entity.VerifyPhoneNumber) error {
+	if err := u.userValidator.ValidateUserID(input.UserID); err != nil {
+		fmt.Println("asdasd")
+		return err
+	}
 	return nil
 }

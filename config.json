@@ -18,5 +18,8 @@
     "account_sid": "AC64bde4c34d7c0ad2106e3e9682a2d231",
     "auth_token": "6b7cdfd9fef678033c613a32af27f734",
     "phone_nunber": "+12056199675"
+  },
+  "rate_limit": {
+    "limit": 10
   }
 }

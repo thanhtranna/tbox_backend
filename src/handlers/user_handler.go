@@ -35,3 +35,19 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, "OK")
 }
+
+func (uh *UserHandler) VerifyPhoneNumber(ctx *gin.Context) {
+	var input entity.VerifyPhoneNumber
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
+		return
+	}
+	// err := uh.userService.Login(input.PhoneNumber)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
+	// 	return
+	// }
+
+	ctx.JSON(http.StatusOK, "OK")
+}
