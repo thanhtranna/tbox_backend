@@ -1,0 +1,118 @@
+basePath: /api/v1
+definitions:
+  common.DataFormat:
+    properties:
+      data:
+        type: object
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Swagger API for TBOX Backend.
+  license: {}
+  title: TBOX Backend API
+  version: "1.0"
+paths:
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: User can login in system
+      parameters:
+      - description: "0987654321"
+        in: path
+        name: phone_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+        "400":
+          description: something went wrong
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+      summary: Login with phone number
+  /api/v1/ping:
+    get:
+      consumes:
+      - application/json
+      description: Ping health check server
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Ping server
+  /api/v1/resend-otp:
+    post:
+      consumes:
+      - application/json
+      description: User resend otp if user not receive otp before
+      parameters:
+      - description: 9c070de4-d6aa-4d53-b9f3-02eacb5a1d05
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+        "400":
+          description: something went wrong
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+      summary: Resend OTP to phone number of user
+  /api/v1/verify:
+    post:
+      consumes:
+      - application/json
+      description: User verify phone number before accept system
+      parameters:
+      - description: 9c070de4-d6aa-4d53-b9f3-02eacb5a1d05
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: "123456"
+        in: path
+        name: otp
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+        "400":
+          description: something went wrong
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.DataFormat'
+      summary: Verify phone number of user
+swagger: "2.0"

@@ -20,7 +20,11 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/gomodule/redigo/redis"
 	"github.com/spf13/viper"
-	// "github.com/go-redis/redis"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "tbox_backend/docs"
 )
 
 func init() {
@@ -34,6 +38,12 @@ func init() {
 		fmt.Println("Service RUN on DEBUG mode")
 	}
 }
+
+// @title TBOX Backend API
+// @version 1.0
+// @description Swagger API for TBOX Backend.
+
+// @BasePath /api/v1
 
 func main() {
 	mongoURI := viper.GetString(`mongo.uri`)
@@ -97,6 +107,9 @@ func main() {
 
 	// register routers
 	routers.IndexRouter(router, userHandler)
+	// setup swagger
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json") // The url pointing to API definition
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	router.Run(port)
 }
