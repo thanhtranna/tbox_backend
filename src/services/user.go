@@ -11,8 +11,9 @@ import (
 )
 
 type IUserService interface {
-	Login(string) error
-	VerifyPhoneNumber(entity.VerifyPhoneNumber) error
+	Login(string) (string, error)
+	VerifyPhoneNumber(entity.VerifyPhoneNumber) (string, error)
+	ResendOTP(entity.ResendOTP) error
 }
 
 type userService struct {
@@ -20,22 +21,24 @@ type userService struct {
 	userTokenRepo repository.IUserTokenRepo
 	userOTPRepo   repository.IUserOTPRepo
 	twilioHelper  helper.ITwilioHelper
+	authHelper    helper.IAuthHelper
 	userValidator validator.IUserValidate
 }
 
-func NewUserService(userRepo repository.IUserRepo, userTokenRepo repository.IUserTokenRepo, userOTPRepo repository.IUserOTPRepo, twilioHelper helper.ITwilioHelper, userValidator validator.IUserValidate) IUserService {
+func NewUserService(userRepo repository.IUserRepo, userTokenRepo repository.IUserTokenRepo, userOTPRepo repository.IUserOTPRepo, twilioHelper helper.ITwilioHelper, authHelper helper.IAuthHelper, userValidator validator.IUserValidate) IUserService {
 	return &userService{
 		userRepo:      userRepo,
 		userTokenRepo: userTokenRepo,
 		userOTPRepo:   userOTPRepo,
 		twilioHelper:  twilioHelper,
+		authHelper:    authHelper,
 		userValidator: userValidator,
 	}
 }
 
-func (u *userService) Login(input string) error {
+func (u *userService) Login(input string) (string, error) {
 	if err := u.userValidator.ValidatePhoneNumber(input); err != nil {
-		return err
+		return "", err
 	}
 
 	// add prefix phone number
@@ -43,39 +46,33 @@ func (u *userService) Login(input string) error {
 
 	user, err := u.userRepo.FindByPhoneNumber(phoneNumber)
 	if err != nil {
-		fmt.Println("err1", err)
-		return err
+		return "", err
 	}
 
 	// verify phone number
 	if user.IsVerify == true {
-		token, err := u.userTokenRepo.GetTokenByUserID(user.ID)
+		userToken, err := u.userTokenRepo.GetTokenByUserID(user.ID)
 		if err != nil {
-			fmt.Println("err2", err)
-			return err
+			return "", err
 		}
-		// return token if login
 		// return token and end
-		fmt.Println("token", token)
-		return nil
+		fmt.Println("token", userToken.Token)
+		return userToken.Token, nil
 	}
-	// Todo: check xem da gui ma OTP chua?
 	// Check flag block user sended otp
 	if _, ok := u.userOTPRepo.CheckSendedOTP(user.ID); ok {
-		fmt.Println("Dang cho xac thuc phone number")
-		return nil
+		return "", fmt.Errorf("Please enter OTP")
 	}
 
 	// generation OTP with phone number
 	otp, err := common.GetTOTPToken(common.String(16))
 	if err != nil {
-		return err
+		return "", err
 	}
-	// chua gui hoac la chua dang nhap lan nao
-	// TODO: gui tin nhan den cho user trong vong 60s.
+	// Send OTP to user
 	err = u.twilioHelper.SendOTP(otp, user.PhoneNumber)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Cache and insert into mongo
@@ -88,17 +85,79 @@ func (u *userService) Login(input string) error {
 		UpdatedAt:  common.GetVietNamTime(),
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println("user ", user)
 
-	return nil
+	fmt.Println("user.ID", user.ID)
+
+	return "", nil
 }
 
-func (u *userService) VerifyPhoneNumber(input entity.VerifyPhoneNumber) error {
+func (u *userService) VerifyPhoneNumber(input entity.VerifyPhoneNumber) (string, error) {
+	if err := u.userValidator.ValidateVerifyPhoneNumber(input); err != nil {
+		return "", err
+	}
+
+	user, err := u.userRepo.FindByUserID(input.UserID)
+	if err != nil {
+		return "", err
+	}
+	if user.IsVerify == true {
+		return "", fmt.Errorf("phone number is verified")
+	}
+	otp, ok := u.userOTPRepo.CheckSendedOTP(input.UserID)
+	if !ok {
+		return "", fmt.Errorf("OTP expire, Please resend OTP")
+	}
+
+	if otp != input.OTP {
+		return "", fmt.Errorf("OTP not match. Please enter OTP again")
+	}
+	// OTP ok
+	user.IsVerify = true
+	user.UpdatedAt = common.GetVietNamTime()
+
+	err = u.userRepo.UpdateVerifyPhoneNumber(user)
+	if err != nil {
+		return "", err
+	}
+	token, err := u.authHelper.GenerateToken(user.PhoneNumber, user.ID)
+	if err != nil {
+		return "", err
+	}
+	err = u.userTokenRepo.Save(entity.UserToken{
+		ID:        user.ID,
+		Token:     token,
+		CreatedAt: common.GetVietNamTime(),
+		UpdatedAt: common.GetVietNamTime(),
+	})
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (u *userService) ResendOTP(input entity.ResendOTP) error {
 	if err := u.userValidator.ValidateUserID(input.UserID); err != nil {
-		fmt.Println("asdasd")
 		return err
 	}
+	user, err := u.userRepo.FindByUserID(input.UserID)
+	if err != nil {
+		return err
+	}
+	if user.IsVerify == true {
+		return fmt.Errorf("phone number has verified")
+	}
+	// generation OTP with phone number
+	otp, err := common.GetTOTPToken(common.String(16))
+	if err != nil {
+		return err
+	}
+	// Send OTP to user
+	err = u.twilioHelper.SendOTP(otp, user.PhoneNumber)
+	if err != nil {
+		return err
+	}
+	_ = u.userOTPRepo.CacheOTPWithUser(user.ID, otp)
 	return nil
 }

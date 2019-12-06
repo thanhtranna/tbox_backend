@@ -27,13 +27,13 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
 		return
 	}
-	err := uh.userService.Login(input.PhoneNumber)
+	token, err := uh.userService.Login(input.PhoneNumber)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "OK")
+	ctx.JSON(http.StatusOK, common.ResponseSuccess(token))
 }
 
 func (uh *UserHandler) VerifyPhoneNumber(ctx *gin.Context) {
@@ -43,11 +43,27 @@ func (uh *UserHandler) VerifyPhoneNumber(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
 		return
 	}
-	// err := uh.userService.Login(input.PhoneNumber)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
-	// 	return
-	// }
+	token, err := uh.userService.VerifyPhoneNumber(input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
+		return
+	}
 
-	ctx.JSON(http.StatusOK, "OK")
+	ctx.JSON(http.StatusOK, common.ResponseSuccess(token))
+}
+
+func (uh *UserHandler) ResendOTP(ctx *gin.Context) {
+	var input entity.ResendOTP
+
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
+		return
+	}
+	err := uh.userService.ResendOTP(input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, common.ResponseFail(err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, common.ResponseSuccess("OK"))
 }

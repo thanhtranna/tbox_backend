@@ -8,3 +8,7 @@ type VerifyPhoneNumber struct {
 	UserID string `json:"user_id"`
 	OTP    string `json:"otp"`
 }
+
+type ResendOTP struct {
+	UserID string `json:"user_id"`
+}

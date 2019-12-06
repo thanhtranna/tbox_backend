@@ -1,12 +1,11 @@
 package common
 
 const (
-	// Secret Key
-
+	// Collection Name
 	CollectionUser      = "users"
 	CollectionUserToken = "user_token"
 	CollectionUserOtp   = "user_otp"
 
-	// Time cache OTP
+	// Time Cache OTP
 	TimeCacheOTP int = 60
 )

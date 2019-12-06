@@ -50,7 +50,11 @@ func (u *userOTPRepository) Save(data entity.UserOTP) error {
 	conditions := bson.D{
 		{"user_id", data.ID},
 	}
-	return u.mgo.Upsert(conditions, data)
+	err := u.mgo.Upsert(conditions, data)
+	if err != nil {
+		return err
+	}
+	return u.DeleteCacheUserOTP(data.ID)
 }
 
 func (u *userOTPRepository) CheckSendedOTP(userID string) (string, bool) {
@@ -59,6 +63,10 @@ func (u *userOTPRepository) CheckSendedOTP(userID string) (string, bool) {
 		return dataRedis, true
 	}
 	return "", false
+}
+
+func (u *userOTPRepository) DeleteCacheUserOTP(userID string) error {
+	return u.rds.DeleteKey(u.getKeyRedisUserOTP(userID))
 }
 
 // Key redis check OTP has sended

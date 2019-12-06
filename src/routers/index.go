@@ -12,6 +12,7 @@ func IndexRouter(rg *gin.Engine, userHandler *handlers.UserHandler) {
 		gr.GET("/ping", pingHandler)
 		gr.POST("/login", userHandler.Login)
 		gr.POST("/verify", userHandler.VerifyPhoneNumber)
+		gr.POST("/resend-otp", userHandler.ResendOTP)
 	}
 }
 

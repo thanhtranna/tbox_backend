@@ -40,7 +40,7 @@ func (u *userTokenRepository) GetTokenByUserID(userID string) (result entity.Use
 	}
 
 	err = u.mgo.FindOne(conditions, &result)
-	if err != nil && err != mgo.ErrNotFound {
+	if err != nil {
 		return result, err
 	}
 	return result, u.CacheUserTokenToRedis(result)

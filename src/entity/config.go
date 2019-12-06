@@ -5,3 +5,7 @@ type TwilioConfig struct {
 	AuthToken   string `json:"auth_token"`
 	PhoneNumber string `json:"phone_nunber"`
 }
+
+type JWTConfig struct {
+	SecretKey string `json:"secret_key"`
+}

@@ -20,6 +20,9 @@
     "phone_nunber": "+12056199675"
   },
   "rate_limit": {
-    "limit": 10
+    "limit": 5
+  },
+  "jwt": {
+    "secret_key": "thisisascretkey"
   }
 }

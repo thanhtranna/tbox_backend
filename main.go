@@ -53,19 +53,12 @@ func main() {
 	// Create a limiter struct.
 	limiter := tollbooth.NewLimiter(rateLimit, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Minute})
 
-	// Configure list of places to look for IP address.
-	// By default it's: "RemoteAddr", "X-Forwarded-For", "X-Real-IP"
-	// If your application is behind a proxy, set "X-Forwarded-For" first.
-	// limiter.SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"})
+	// Limit only POST requests.
+	limiter.SetMethods([]string{"POST"})
 
-	// // Limit only GET and POST requests.
-	limiter.SetMethods([]string{"GET", "POST"})
-
-	// // You can remove all entries at once.
-	// limiter.RemoveHeader("X-Access-Token")
-
-	// Or remove specific ones.
-	// limiter.RemoveHeaderEntries("X-Access-Token", []string{"limitless-token"})
+	authConfig := entity.JWTConfig{
+		SecretKey: viper.GetString(`jwt.secret_key`),
+	}
 
 	session, err := mgo.Dial(mongoURI)
 	if err != nil {
@@ -90,13 +83,14 @@ func main() {
 	userOTPRepo := repository.NewUserOTPRepository(session, pool)
 
 	// import helper
-	twiliHelper := helper.NewTwilioHelper(twilioConfig)
+	twilioHelper := helper.NewTwilioHelper(twilioConfig)
+	authHelper := helper.NewAuthHelper(authConfig)
 
 	// import validate
 	userValidator := validator.NewUserValidator()
 
 	// import services
-	userService := services.NewUserService(userRepo, userTokenRepo, userOTPRepo, twiliHelper, userValidator)
+	userService := services.NewUserService(userRepo, userTokenRepo, userOTPRepo, twilioHelper, authHelper, userValidator)
 	userHandler := handlers.NewUserHandler(userService)
 
 	router.Use(tollbooth_gin.LimitHandler(limiter))
