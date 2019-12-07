@@ -31,6 +31,7 @@ func NewUserOTPRepository(s *mgo.Session, rds *redis.Pool) IUserOTPRepo {
 	}
 }
 
+// GetOTPByUserID: Get info user by userId in UserOTP table
 func (u *userOTPRepository) GetOTPByUserID(userID string) (result entity.UserOTP, err error) {
 	result, err = u.GetUserOTPFromRedis(userID)
 	if err == nil && result.ID != "" {
@@ -46,6 +47,7 @@ func (u *userOTPRepository) GetOTPByUserID(userID string) (result entity.UserOTP
 	return result, u.CacheUserOTPToRedis(result)
 }
 
+// Save: save info user OTP
 func (u *userOTPRepository) Save(data entity.UserOTP) error {
 	conditions := bson.D{
 		{"user_id", data.ID},
@@ -57,6 +59,7 @@ func (u *userOTPRepository) Save(data entity.UserOTP) error {
 	return u.DeleteCacheUserOTP(data.ID)
 }
 
+// CheckSendedOTP: check OTP has sended by userId
 func (u *userOTPRepository) CheckSendedOTP(userID string) (string, bool) {
 	dataRedis, _ := u.rds.GetString(u.getKeyOTPOfUser(userID))
 	if dataRedis != "" {
@@ -79,6 +82,7 @@ func (u *userOTPRepository) getKeyRedisUserOTP(input string) string {
 	return fmt.Sprintf(common.KeyRedisUserOTP, input)
 }
 
+// CacheUserOTPToRedis: Cache info UserToken into redis
 func (u *userOTPRepository) CacheUserOTPToRedis(input entity.UserOTP) error {
 	dataRedis, err := json.Marshal(input)
 	if err != nil {
@@ -87,6 +91,7 @@ func (u *userOTPRepository) CacheUserOTPToRedis(input entity.UserOTP) error {
 	return u.rds.SetString(u.getKeyRedisUserOTP(input.ID), -1, string(dataRedis))
 }
 
+// GetUserOTPFromRedis: Get info UserToken in redis
 func (u *userOTPRepository) GetUserOTPFromRedis(input string) (result entity.UserOTP, err error) {
 	dataRedis, err := u.rds.GetString(u.getKeyRedisUserOTP(input))
 	if err != nil && err != redis.ErrNil {

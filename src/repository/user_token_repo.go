@@ -30,6 +30,7 @@ func NewUserTokenRepository(s *mgo.Session, rds *redis.Pool) IUserTokenRepo {
 	}
 }
 
+// GetTokenByUserID: find user info in UserToken table by userID
 func (u *userTokenRepository) GetTokenByUserID(userID string) (result entity.UserToken, err error) {
 	result, err = u.GetUserTokenFromRedis(userID)
 	if err == nil && result.ID != "" {
@@ -46,14 +47,17 @@ func (u *userTokenRepository) GetTokenByUserID(userID string) (result entity.Use
 	return result, u.CacheUserTokenToRedis(result)
 }
 
+// Save: store data UserToken
 func (u *userTokenRepository) Save(data entity.UserToken) error {
 	return u.mgo.Insert(data)
 }
 
-func (u *userTokenRepository) getKeyRedisUserToken(input string) string {
-	return fmt.Sprintf(common.KeyRedisUserToken, input)
+// get key cache UserToken table by UserID
+func (u *userTokenRepository) getKeyRedisUserToken(userID string) string {
+	return fmt.Sprintf(common.KeyRedisUserToken, userID)
 }
 
+// CacheUserTokenToRedis: cache UserToken info in redis with key UserID
 func (u *userTokenRepository) CacheUserTokenToRedis(input entity.UserToken) error {
 	dataRedis, err := json.Marshal(input)
 	if err != nil {
@@ -62,8 +66,9 @@ func (u *userTokenRepository) CacheUserTokenToRedis(input entity.UserToken) erro
 	return u.rds.SetString(u.getKeyRedisUserToken(input.ID), -1, string(dataRedis))
 }
 
-func (u *userTokenRepository) GetUserTokenFromRedis(input string) (result entity.UserToken, err error) {
-	dataRedis, err := u.rds.GetString(u.getKeyRedisUserToken(input))
+// GetUserTokenFromRedis: Get UserToken info in redis with key UserID
+func (u *userTokenRepository) GetUserTokenFromRedis(userID string) (result entity.UserToken, err error) {
+	dataRedis, err := u.rds.GetString(u.getKeyRedisUserToken(userID))
 	if err != nil && err != redis.ErrNil {
 		return result, err
 	}

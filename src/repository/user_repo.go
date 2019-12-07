@@ -46,6 +46,7 @@ func (u *userRepository) FindByUserID(userID string) (result entity.User, err er
 	return result, u.CacheUserByUserIDToRedis(result)
 }
 
+// FindByPhoneNumber: find user by phone number
 func (u *userRepository) FindByPhoneNumber(input string) (result entity.User, err error) {
 	result, err = u.GetUserFromRedis(input)
 	if err == nil && result.ID != "" {
@@ -79,6 +80,7 @@ func (u *userRepository) FindByPhoneNumber(input string) (result entity.User, er
 	return result, u.CacheUserToRedis(result)
 }
 
+// CacheUserToRedis: cache User info in redis with key PhoneNumber
 func (u *userRepository) CacheUserToRedis(input entity.User) error {
 	dataRedis, err := json.Marshal(input)
 	if err != nil {
@@ -87,6 +89,7 @@ func (u *userRepository) CacheUserToRedis(input entity.User) error {
 	return u.rds.SetString(u.getKeyRedisUser(input.PhoneNumber), -1, string(dataRedis))
 }
 
+// CacheUserToRedis: cache User info in redis with key UserID
 func (u *userRepository) CacheUserByUserIDToRedis(input entity.User) error {
 	dataRedis, err := json.Marshal(input)
 	if err != nil {
@@ -95,14 +98,17 @@ func (u *userRepository) CacheUserByUserIDToRedis(input entity.User) error {
 	return u.rds.SetString(u.getKeyRedisUserByID(input.ID), -1, string(dataRedis))
 }
 
+// Get key cache User with Phone Number
 func (u *userRepository) getKeyRedisUser(phoneNumber string) string {
 	return fmt.Sprintf(common.KeyRedisUser, phoneNumber)
 }
 
+// Get key cache User with UserID
 func (u *userRepository) getKeyRedisUserByID(userID string) string {
 	return fmt.Sprintf(common.KeyRedisUserByID, userID)
 }
 
+// GetUserByUserIDFromRedis: Get User info in redis with key UserID
 func (u *userRepository) GetUserByUserIDFromRedis(input string) (result entity.User, err error) {
 	dataRedis, err := u.rds.GetString(u.getKeyRedisUserByID(input))
 	if err != nil && err != redis.ErrNil {
@@ -115,16 +121,19 @@ func (u *userRepository) GetUserByUserIDFromRedis(input string) (result entity.U
 	return result, nil
 }
 
+// Delete User info in redis with key UserID
 func (u *userRepository) DeleteKeyRedisUserByUserID(userID string) error {
 	return u.rds.DeleteKey(u.getKeyRedisUserByID(userID))
 }
 
+// Delete User info in redis with key Phone Number
 func (u *userRepository) DeleteKeyRedisUser(phoneNumber string) error {
 	return u.rds.DeleteKey(u.getKeyRedisUser(phoneNumber))
 }
 
-func (u *userRepository) GetUserFromRedis(input string) (result entity.User, err error) {
-	dataRedis, err := u.rds.GetString(u.getKeyRedisUser(input))
+// GetUserFromRedis: Get User info in redis with key Phone Number
+func (u *userRepository) GetUserFromRedis(phoneNumber string) (result entity.User, err error) {
+	dataRedis, err := u.rds.GetString(u.getKeyRedisUser(phoneNumber))
 	if err != nil && err != redis.ErrNil {
 		return result, err
 	}
@@ -135,6 +144,7 @@ func (u *userRepository) GetUserFromRedis(input string) (result entity.User, err
 	return result, nil
 }
 
+// UpdateVerifyPhoneNumber: Update User info in redis and delete key redis cache user info
 func (u *userRepository) UpdateVerifyPhoneNumber(user entity.User) (err error) {
 	conditions := bson.D{
 		{"user_id", user.ID},
