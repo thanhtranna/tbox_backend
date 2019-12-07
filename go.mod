@@ -14,6 +14,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.3 // indirect
 	github.com/go-openapi/spec v0.19.4 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/golang/mock v1.1.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/json-iterator/go v1.1.8 // indirect
 	github.com/kr/pty v1.1.8 // indirect
@@ -21,8 +22,10 @@ require (
 	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/rafaeljusto/redigomock v0.0.0-20191117212112-00b2509252a1
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.5.0
+	github.com/stretchr/testify v1.4.0
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.3
