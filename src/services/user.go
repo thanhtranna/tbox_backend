@@ -10,6 +10,7 @@ import (
 	"tbox_backend/src/validator"
 )
 
+//IUserService: interface user service
 type IUserService interface {
 	Login(string) (string, error)
 	VerifyPhoneNumber(entity.VerifyPhoneNumber) (string, error)
@@ -44,6 +45,7 @@ func (u *userService) Login(input string) (string, error) {
 	// add prefix phone number
 	phoneNumber := common.AddPrefixPhoneNumberVietNam(input)
 
+	// find user by phone number
 	user, err := u.userRepo.FindByPhoneNumber(phoneNumber)
 	if err != nil {
 		return "", err
@@ -56,7 +58,6 @@ func (u *userService) Login(input string) (string, error) {
 			return "", err
 		}
 		// return token and end
-		fmt.Println("token", userToken.Token)
 		return userToken.Token, nil
 	}
 	// Check flag block user sended otp
@@ -69,6 +70,7 @@ func (u *userService) Login(input string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	// Send OTP to user
 	err = u.twilioHelper.SendOTP(otp, user.PhoneNumber)
 	if err != nil {
@@ -88,9 +90,7 @@ func (u *userService) Login(input string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("user.ID", user.ID)
-
-	return "", nil
+	return user.ID, nil
 }
 
 func (u *userService) VerifyPhoneNumber(input entity.VerifyPhoneNumber) (string, error) {
@@ -98,6 +98,7 @@ func (u *userService) VerifyPhoneNumber(input entity.VerifyPhoneNumber) (string,
 		return "", err
 	}
 
+	// find user by userId
 	user, err := u.userRepo.FindByUserID(input.UserID)
 	if err != nil {
 		return "", err
@@ -113,7 +114,7 @@ func (u *userService) VerifyPhoneNumber(input entity.VerifyPhoneNumber) (string,
 	if otp != input.OTP {
 		return "", fmt.Errorf("OTP not match. Please enter OTP again")
 	}
-	// OTP ok
+	// OTP correct
 	user.IsVerify = true
 	user.UpdatedAt = common.GetVietNamTime()
 
